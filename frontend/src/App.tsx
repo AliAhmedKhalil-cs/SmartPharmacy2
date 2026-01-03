@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
-import './App.css';
+import './app.css';
 
-const API_BASE_URL = "http://localhost:3000/api";
+// الرابط الجديد الخاص بـ Replit
+const API_BASE_URL = "https://a39df363-c1c8-4bcc-91da-93451029a018-00-1g54chxlooa5m.spock.replit.dev";
 
 function App() {
     const [query, setQuery] = useState('');
@@ -26,8 +27,11 @@ function App() {
             const res = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(val)}`);
             const data = await res.json();
             setResults(data);
-        } catch { alert('تأكد من تشغيل السيرفر!'); }
-        finally { setLoading(false); }
+        } catch { 
+            alert('تأكد من تشغيل السيرفر!'); 
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     // دالة الكاميرا
@@ -47,9 +51,12 @@ function App() {
                 const detectedDrug = drugNames[0];
                 setQuery(detectedDrug);
                 await handleSearch(detectedDrug);
-            } else { alert("الصورة غير واضحة. حاول مرة أخرى."); }
-        } catch { alert('فشل الاتصال بخدمة تحليل الصور'); }
-        finally {
+            } else { 
+                alert("الصورة غير واضحة. حاول مرة أخرى."); 
+            }
+        } catch { 
+            alert('فشل الاتصال بخدمة تحليل الصور'); 
+        } finally {
             setAnalyzing(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
@@ -70,7 +77,9 @@ function App() {
             });
             const data = await res.json();
             setChatMessages(p => [...p, { sender: 'bot', text: data.reply }]);
-        } finally { setChatLoading(false); }
+        } finally { 
+            setChatLoading(false); 
+        }
     };
 
     return (
