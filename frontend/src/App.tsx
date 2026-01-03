@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import './app.css';
+import './index.css';
 
 // الرابط الجديد الخاص بـ Replit
 const API_BASE_URL = "https://a39df363-c1c8-4bcc-91da-93451029a018-00-1g54chxlooa5m.spock.replit.dev";
