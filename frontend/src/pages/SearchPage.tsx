@@ -24,7 +24,8 @@ export default function SearchPage() {
         setLoading(true);
         try {
             // استخدام رابط كامل لتفادي مشاكل الشبكة
-            const r = await fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(query)}`);
+            const apiUrl = import.meta.env.VITE_API_URL || '';
+            const r = await fetch(`${apiUrl}/api/search?q=${encodeURIComponent(query)}`);
             const data = await r.json();
             setResults(data);
         } catch (err) {
@@ -52,7 +53,8 @@ export default function SearchPage() {
 
         try {
             // إرسال الصورة للسيرفر
-            const res = await fetch('http://localhost:3000/api/ocr', {
+            const apiUrl = import.meta.env.VITE_API_URL || '';
+            const res = await fetch(`${apiUrl}/api/ocr`, {
                 method: 'POST',
                 body: formData,
             });
