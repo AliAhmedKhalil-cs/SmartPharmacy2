@@ -1,10 +1,10 @@
-import './index.css'  // ✅ قمنا بتغيير الاسم هنا ليتطابق مع الملف الجديد
+import './index.css'  // ✅ التأكد من استدعاء ملف التصميم الجديد
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App' // ✅ تأكد أن اسم ملف الكود لديك هو App.tsx
+import App from './App' // ✅ الآن هذا صحيح لأننا غيرنا اسم الملف لـ App.tsx
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <App /> {/* ✅ الحرف الأول كبير ضروري جداً لكي يفهم React أنه مكون */}
+        <App />
     </React.StrictMode>,
 )
