@@ -1,4 +1,4 @@
-﻿const qEl = document.getElementById("q");
+const qEl = document.getElementById("q");
 const allergenEl = document.getElementById("allergen");
 const exactEl = document.getElementById("exact");
 const fuzzyEl = document.getElementById("fuzzy");
@@ -9,9 +9,24 @@ const portIndicator = document.getElementById("port-indicator");
 let pageExact = 1, pageFuzzy = 1, lastQuery = '';
 const debounce = (fn, ms=300)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}};
 
+const API_BASE_URL = 'https://a39df363-c1c8-4bcc-91da-93451029a018-00-1g54chxlooa5m.spock.replit.dev';
+
 async function fetchWithFallback(relUrl){
-  try { const r = await fetch(relUrl); if(!r.ok) throw new Error('HTTP '+r.status); return r; }
-  catch(e){ try { const alt=`${location.protocol}//${location.hostname}:3002${new URL(relUrl,location).pathname}${new URL(relUrl,location).search}`; const r2 = await fetch(alt); if(!r2.ok) throw new Error('HTTP '+r2.status); return r2 } catch(e2){ throw e2 } }
+  const url = relUrl.startsWith('http') ? relUrl : `${API_BASE_URL}${relUrl}`;
+  try { 
+    const r = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    }); 
+    if(!r.ok) throw new Error('HTTP '+r.status); 
+    return r; 
+  } catch(e){ 
+    console.error('Fetch error:', e);
+    throw e;
+  }
 }
 
 function showStatus(s){ statusEl.textContent = s || '—' }
@@ -54,14 +69,17 @@ async function search(q, page=1, per_page=50){
     renderList(exactEl, data.exact || []); renderPager(document.getElementById('pager-exact'), metaPage, (p)=>{ pageExact=p; doSearch(); });
     renderList(fuzzyEl, data.fuzzy || []); renderPager(document.getElementById('pager-fuzzy'), metaPage, (p)=>{ pageFuzzy=p; doSearch(); });
     showStatus(`عرض نتائج لـ "${q}"`); try{ const m=(res.url||'').match(/:(\d+)\//); document.getElementById('port-indicator').textContent = m?m[1]:(location.port||'—'); }catch(e){}
-  } catch(err){ console.error(err); showStatus('خطأ في الاتصال'); exactEl.innerHTML=''; fuzzyEl.innerHTML=''; }
+  } catch(err){ console.error(err); showStatus('خطأ في الاتصال بالسيرفر'); exactEl.innerHTML=''; fuzzyEl.innerHTML=''; }
 }
 
 const doSearch = debounce(()=>{ const q=qEl.value.trim(); if(!q) return; const per=Number(perPageEl.value)||50; const pageToUse=Math.max(pageExact||1,pageFuzzy||1); search(q,pageToUse,per); },300);
 
-qEl.addEventListener('keydown', e=>{ if(e.key==='Enter'){ pageExact=1; pageFuzzy=1; doSearch(); }});
-qEl.addEventListener('input', ()=>{ pageExact=1; pageFuzzy=1; doSearch(); });
-allergenEl.addEventListener('change', ()=>{ if(qEl.value.trim()) doSearch(); });
-perPageEl.addEventListener('change', ()=>{ if(qEl.value.trim()) doSearch(); });
-if(qEl) qEl.focus(); showStatus('جاهز');
-export {};
+if (qEl) {
+  qEl.addEventListener('keydown', e=>{ if(e.key==='Enter'){ pageExact=1; pageFuzzy=1; doSearch(); }});
+  qEl.addEventListener('input', ()=>{ pageExact=1; pageFuzzy=1; doSearch(); });
+  qEl.focus();
+}
+if (allergenEl) allergenEl.addEventListener('change', ()=>{ if(qEl.value.trim()) doSearch(); });
+if (perPageEl) perPageEl.addEventListener('change', ()=>{ if(qEl.value.trim()) doSearch(); });
+
+showStatus('جاهز');
