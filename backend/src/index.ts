@@ -1,57 +1,46 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import fileUpload from 'express-fileupload';
 import dotenv from 'dotenv';
-import apiRoutes from './routes/api.js';
+import { rateLimit } from './middleware/security';
+import apiRouter from './routes/api';
 
-// تحميل متغيرات البيئة من ملف .env
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- 1. الإعدادات الوسيطة (Middlewares) ---
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
-// تفعيل CORS للسماح للفرونت اند بالاتصال بالسيرفر
-app.use(cors());
+app.use(cors({
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 
-// هام جداً: تفعيل قراءة JSON لكي يعمل الشات بوت ويستقبل الرسائل
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// إعدادات رفع الملفات (لضمان استقبال صور الروشتات بوضوح)
+app.use(rateLimit);
+app.use(express.json());
 app.use(fileUpload({
-    limits: { fileSize: 10 * 1024 * 1024 }, // حد أقصى 10 ميجا للصورة
+    limits: { fileSize: 10 * 1024 * 1024 },
     abortOnLimit: true,
     createParentPath: true
 }));
 
-// --- 2. المسارات (Routes) ---
-
-// صفحة ترحيبية عند فتح http://localhost:3000 لمنع خطأ "Cannot GET /"
-app.get('/', (req: Request, res: Response) => {
-    res.send(`
-        <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-            <h1 style="color: #1e3c72;">🚀 SmartPharmacy API is Running</h1>
-            <p style="color: #666;">السيرفر يعمل الآن وجاهز لاستقبال الطلبات.</p>
-            <div style="background: #f4f7f6; padding: 20px; border-radius: 10px; display: inline-block;">
-                <code>Endpoint: http://localhost:${PORT}/api</code>
-            </div>
-        </div>
-    `);
+app.get('/', (_req, res) => {
+    res.send('✅ Smart Pharmacy Backend is Running!');
 });
 
-// ربط مسارات الـ API (البحث، الشات، والروشتة)
-app.use('/api', apiRoutes);
+app.use('/api', apiRouter);
 
-// --- 3. تشغيل السيرفر ---
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Internal Server Error' });
+});
 
 app.listen(PORT, () => {
-    console.log(`
-    =================================================
-    ✅ SmartPharmacy Backend is live!
-    🌍 URL: http://localhost:${PORT}
-    🤖 AI Features (Chat & OCR) are active
-    =================================================
-    `);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
